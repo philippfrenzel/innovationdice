@@ -25,13 +25,25 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
+      - name: Install dependencies (if needed)
+        run: |
+          if [ -f package.json ]; then
+            npm ci
+          fi
+
+      - name: Build the site (if needed)
+        run: |
+          if [ -f package.json ]; then
+            npm run build
+          fi
+
       - name: Set up GitHub Pages
         uses: actions/configure-pages@v3
 
       - name: Upload site to artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          path: "."  # Enthält index.html im Root
+          path: "./"  # Replace with the build output directory if applicable
 
       - name: Deploy to GitHub Pages
         id: deployment
