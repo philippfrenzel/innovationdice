@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Interaktiver Würfel</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      perspective: 1000px;
+      font-family: sans-serif;
+    }
+
+    .scene {
+      width: 200px;
+      height: 200px;
+      position: relative;
+      transform-style: preserve-3d;
+      cursor: grab;
+    }
+
+    .cube {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      transform-style: preserve-3d;
+      transform: rotateX(-30deg) rotateY(-30deg);
+    }
+
+    .face {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: bold;
+      border: 2px solid #fff;
+      text-align: center;
+      padding: 10px;
+      box-sizing: border-box;
+      white-space: pre-wrap;
+    }
+
+    .face.front  { transform: rotateY(  0deg) translateZ(100px); background: orange; }
+    .face.back   { transform: rotateY(180deg) translateZ(100px); background: yellow; color: black; }
+    .face.right  { transform: rotateY( 90deg) translateZ(100px); background: green; }
+    .face.left   { transform: rotateY(-90deg) translateZ(100px); background: blue; }
+    .face.top    { transform: rotateX( 90deg) translateZ(100px); background: purple; }
+    .face.bottom { transform: rotateX(-90deg) translateZ(100px); background: red; }
+  </style>
+</head>
+<body>
+
+<div class="scene" id="scene">
+  <div class="cube" id="cube">
+    <div class="face front"  id="face1"></div>
+    <div class="face back"   id="face2"></div>
+    <div class="face right"  id="face3"></div>
+    <div class="face left"   id="face4"></div>
+    <div class="face top"    id="face5"></div>
+    <div class="face bottom" id="face6"></div>
+  </div>
+</div>
+
+<script>
+  // Aktualisierte Beschriftung ohne Emoji und Seitennummer
+  const labels = {
+    face1: "«Mach es einfach besser!»\nJede kleine Verbesserung macht den Unterschied.",
+    face2: "«Probiere Neues aus!»\nNeue Wege entstehen beim Gehen.",
+    face3: "«Gemeinsam sind wir innovativ!»\nDie besten Ideen entstehen im Team.",
+    face4: "«Klare Ziele – bessere Lösungen!»\nWer Ziele sieht, findet Wege.",
+    face5: "«Traditionen schätzen – Zukunft gestalten!»\nNutze das Bewährte, um Neues zu schaffen.",
+    face6: "«Deine Idee zählt!»\nInnovation beginnt bei dir."
+  };
+
+  for (const [id, text] of Object.entries(labels)) {
+    document.getElementById(id).innerText = text;
+  }
+
+  // Drag-Steuerung und Trägheit
+  const cube = document.getElementById('cube');
+  const scene = document.getElementById('scene');
+
+  let isDragging = false;
+  let lastX, lastY;
+  let rotationX = -30, rotationY = -30;
+  let velocityX = 0, velocityY = 0;
+  let animationFrame;
+
+  scene.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    cancelAnimationFrame(animationFrame);
+    scene.style.cursor = 'grabbing';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      scene.style.cursor = 'grab';
+      const start = performance.now();
+      const duration = 7000; // 7 Sekunden
+
+      function animate(time) {
+        const elapsed = time - start;
+        const t = Math.min(elapsed / duration, 1);
+        const ease = 1 - t; // linear decay
+
+        rotationY += velocityX * ease;
+        rotationX += velocityY * ease;
+
+        cube.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
+
+        if (t < 1) {
+          animationFrame = requestAnimationFrame(animate);
+        }
+      }
+
+      animationFrame = requestAnimationFrame(animate);
+    }
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+
+    rotationY += dx * 0.5;
+    rotationX -= dy * 0.5;
+
+    velocityX = dx * 0.2;
+    velocityY = dy * 0.2;
+
+    cube.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
+  });
+</script>
+
+</body>
+</html>
